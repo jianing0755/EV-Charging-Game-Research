@@ -1,217 +1,217 @@
-````markdown
 # 02 — Bayesian Game
 
-This module introduces Bayesian decision-making under
-incomplete information and provides the theoretical foundation
-for modeling heterogeneous EV drivers.
+This module introduces Bayesian decision-making under incomplete information.
 
-The current implementation is intentionally simple. Its purpose
-is to establish the computational framework that will later be
-extended to an electric vehicle charging game.
+The purpose of this module is to build the theoretical and computational foundation for modeling heterogeneous EV drivers in charging decision problems.
 
 ---
 
 ## 1. Motivation
 
-In an EV charging environment, a driver may not know the exact
-characteristics or preferences of other drivers.
+In an EV charging environment, a driver may not know the exact characteristics or preferences of other drivers.
 
-For example, different drivers may have different:
+Different drivers may have different:
 
 - Risk preferences
 - Range anxiety levels
 - Battery states
 - Charging preferences
 
-A driver may therefore know the possible types of other drivers
-but not their exact type.
+A driver may therefore know the possible types of other drivers without knowing their exact type.
 
-Instead, the driver forms a probabilistic belief about the type
-of another player.
+Instead, the driver forms a probabilistic belief about the type of another player.
 
-This creates a game with incomplete information.
+This creates a game with **incomplete information**.
 
 ---
 
 ## 2. Player Types
 
-The current model considers two possible types:
+The current model considers two possible player types:
 
 - `risk_averse`
 - `risk_neutral`
 
 Formally:
 
-\[
+$$
 t \in \{RiskAverse, RiskNeutral\}
-\]
+$$
 
-The player does not directly observe the type of the other
-player.
-
-Instead, the player has a belief distribution:
-
-\[
-P(t)
-\]
+The player's belief about the type of the other player is represented by a probability distribution.
 
 For example:
 
-\[
-P(RiskAverse)=0.4
-\]
+$$
+P(RiskAverse) = 0.4
+$$
 
-\[
-P(RiskNeutral)=0.6
-\]
+$$
+P(RiskNeutral) = 0.6
+$$
+
+The probabilities must satisfy:
+
+$$
+\sum_t P(t) = 1
+$$
 
 ---
 
 ## 3. Actions
 
-The player chooses between two possible actions:
+The player can choose between two possible actions:
 
-\[
-A = \{A,B\}
-\]
+- `A`
+- `B`
 
-In the eventual EV charging application, these actions can
-represent different charging stations.
+Formally:
+
+$$
+a \in \{A, B\}
+$$
 
 At this stage, `A` and `B` are abstract actions.
+
+In the later EV charging model, they will represent different charging stations.
 
 ---
 
 ## 4. Conditional Cost
 
-The player's cost depends on the type of the other player.
+The cost of an action depends on the type of the other player.
 
-The illustrative conditional cost structure is:
+The current illustrative cost structure is:
 
 | Other Player Type | Action A | Action B |
-|---|---:|---:|
-| Risk-Averse | 10 | 6 |
-| Risk-Neutral | 4 | 8 |
+|-------------------|----------|----------|
+| Risk-Averse       | 10       | 6        |
+| Risk-Neutral      | 4        | 8        |
 
-These values are **illustrative only** and do not represent
-parameters from a specific published paper.
+These values are **illustrative parameters for demonstrating the Bayesian game framework**.
+
+They are not parameters taken from a published paper.
 
 ---
 
 ## 5. Expected Cost
 
-Because the player does not know the exact type of the other
-player, the player evaluates each action using expected cost.
+Because the player does not know the exact type of the other player, each action is evaluated using its expected cost.
 
-The expected cost is:
+The expected cost is defined as:
 
-\[
-E[C(a)]
-=
-\sum_t P(t)C(a|t)
-\]
+$$
+E[C(a)] = \sum_t P(t)C(a \mid t)
+$$
 
 where:
 
-- \(t\) is the type of the other player
-- \(P(t)\) is the player's belief about that type
-- \(C(a|t)\) is the conditional cost of action \(a\)
+- \(a\) = player's action
+- \(t\) = type of the other player
+- \(P(t)\) = belief about the other player's type
+- \(C(a \mid t)\) = conditional cost
 
-For example, with:
+### Example
 
-\[
-P(RiskAverse)=0.4
-\]
+Suppose:
+
+$$
+P(RiskAverse) = 0.4
+$$
 
 and:
 
-\[
-P(RiskNeutral)=0.6
-\]
+$$
+P(RiskNeutral) = 0.6
+$$
 
-the expected cost of Action A is:
+For Action A:
 
-\[
-E[C(A)]
-=
-0.4(10)+0.6(4)
-=
-6.4
-\]
-
-The expected cost of Action B is:
-
-\[
-E[C(B)]
-=
-0.4(6)+0.6(8)
-=
-7.2
-\]
+$$
+E[C(A)] = 0.4(10) + 0.6(4)
+$$
 
 Therefore:
 
-\[
+$$
+E[C(A)] = 6.4
+$$
+
+For Action B:
+
+$$
+E[C(B)] = 0.4(6) + 0.6(8)
+$$
+
+Therefore:
+
+$$
+E[C(B)] = 7.2
+$$
+
+Since:
+
+$$
 E[C(A)] < E[C(B)]
-\]
+$$
 
-and the player chooses:
-
-\[
-\boxed{A}
-\]
+the player prefers Action A.
 
 ---
 
 ## 6. Bayesian Best Response
 
-The Bayesian best response is the action that minimizes
-expected cost:
+The Bayesian best response is the action that minimizes expected cost.
 
-\[
-a^*
-=
-\arg\min_a E[C(a)]
-\]
+Formally:
+
+$$
+a^* = \arg\min_a E[C(a)]
+$$
 
 For the example above:
 
-\[
-a^*=A
-\]
+$$
+a^* = A
+$$
 
-The implementation automatically evaluates all available
-actions and returns the action with the lowest expected cost.
+The Python implementation automatically evaluates all available actions and returns the action with the lowest expected cost.
 
 ---
 
-## 7. Files
+## 7. Project Structure
+
+```text
+02_bayesian_game/
+│
+├── expected_cost.py
+├── bayesian_best_response.py
+└── README.md
+```
 
 ### `expected_cost.py`
 
-Provides functions for:
+This module provides functions for:
 
-- Belief validation
-- Conditional cost lookup
-- Expected cost calculation
+- Validating probability distributions
+- Looking up conditional costs
+- Computing expected costs
 
-The main function is:
+Main function:
 
 ```python
 expected_cost(action, belief)
-````
-
----
+```
 
 ### `bayesian_best_response.py`
 
-Provides functions for:
+This module provides functions for:
 
-* Evaluating all actions
-* Comparing expected costs
-* Computing the Bayesian best response
+- Evaluating all available actions
+- Comparing expected costs
+- Computing the Bayesian best response
 
-The main function is:
+Main function:
 
 ```python
 bayesian_best_response(belief)
@@ -221,7 +221,13 @@ bayesian_best_response(belief)
 
 ## 8. How to Run
 
-From the `02_bayesian_game` directory:
+Navigate to this directory:
+
+```bash
+cd 02_bayesian_game
+```
+
+Run:
 
 ```bash
 python expected_cost.py
@@ -256,9 +262,9 @@ Bayesian Best Response: A
 
 ---
 
-## 9. Model Structure
+## 9. Computational Logic
 
-The computational logic can be summarized as:
+The computational structure is:
 
 ```text
 Player Type
@@ -277,7 +283,7 @@ Mathematically:
 $$
 P(t)
 \rightarrow
-C(a|t)
+C(a \mid t)
 \rightarrow
 E[C(a)]
 \rightarrow
@@ -286,58 +292,55 @@ $$
 
 ---
 
-## 10. Relation to EV Charging Research
+## 10. Connection to EV Charging Research
 
-This Bayesian framework will later be incorporated into an
-EV charging decision model.
+The current abstract model will later be extended into an EV charging decision model.
 
-The abstract action:
+The abstract actions:
 
 ```text
 A / B
 ```
 
-will become a charging-station choice.
+will become charging-station choices.
 
-The illustrative cost:
+The current illustrative cost function:
 
 ```text
 10 / 6 / 4 / 8
 ```
 
-will eventually be replaced by a model-based cost function
-depending on physical and behavioral variables such as:
+will eventually be replaced by a model-based cost function incorporating variables such as:
 
-* Battery state
-* Remaining driving range
-* Charging price
-* Travel distance
-* Waiting time
-* Queue length
-* Range anxiety
-* Driver risk preference
+- Battery state of charge
+- Remaining driving range
+- Charging price
+- Travel distance
+- Waiting time
+- Queue length
+- Charging duration
+- Range anxiety
+- Driver risk preference
 
-The resulting model will combine Bayesian game theory with
-EV charging network decisions.
+This will allow the model to represent strategic charging decisions under heterogeneous driver characteristics.
 
 ---
 
 ## 11. Current Limitations
 
-This module is a simplified educational and computational
-foundation rather than a complete EV charging model.
+This module is a simplified computational foundation rather than a complete EV charging model.
 
-It currently does not model:
+It currently does not include:
 
-* Multiple interacting EVs
-* Endogenous queue length
-* Charging station capacity
-* Battery dynamics
-* Travel time
-* Charging duration
-* Explicit range-anxiety functions
-* Bayesian Nash equilibrium with strategic type-dependent
-  strategies
+- Multiple interacting EVs
+- Endogenous queue length
+- Charging station capacity
+- Battery dynamics
+- Travel time
+- Charging duration
+- Explicit range-anxiety functions
+- Type-dependent strategic policies
+- Bayesian Nash equilibrium
 
 These components will be introduced in later modules.
 
@@ -345,32 +348,26 @@ These components will be introduced in later modules.
 
 ## 12. Next Step
 
-The next module will extend this Bayesian framework into an
-EV charging game:
+The next module will extend the Bayesian game framework into an EV charging model.
 
 ```text
-02 Bayesian Game
-        ↓
-03 EV Charging Model
-        ↓
+Bayesian Game
+      ↓
+EV Charging Model
+      ↓
 Battery State
-        +
+      +
 Charging Cost
-        +
+      +
 Travel Cost
-        +
-Queueing Cost
-        +
+      +
+Waiting / Queueing Cost
+      +
 Range Anxiety
-        ↓
+      ↓
 Strategic Charging Decisions
-        ↓
-Nash / Bayesian Equilibrium
+      ↓
+Equilibrium Analysis
 ```
 
-The goal is to gradually move from a simple theoretical model
-to a reproducible computational framework for EV charging
-research.
-
-```
-```
+The long-term goal is to develop a reproducible computational framework for studying EV charging decisions and eventually reproduce and extend published research.
