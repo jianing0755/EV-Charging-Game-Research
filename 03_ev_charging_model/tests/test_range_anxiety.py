@@ -1,4 +1,3 @@
-```python
 """
 Tests for the range anxiety model.
 
@@ -249,4 +248,3 @@ def test_invalid_alpha():
             lambda_i=2.0,
             alpha_i=0.0
         )
-```
