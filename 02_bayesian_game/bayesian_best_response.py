@@ -1,4 +1,3 @@
-```python
 """
 Bayesian Best Response.
 
@@ -125,4 +124,3 @@ if __name__ == "__main__":
     compare_actions(
         belief
     )
-```
