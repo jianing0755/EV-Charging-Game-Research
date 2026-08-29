@@ -1,4 +1,3 @@
-```python
 """
 Expected Cost in a Bayesian Decision Problem.
 
@@ -178,4 +177,3 @@ if __name__ == "__main__":
             f"Action {action}: "
             f"Expected Cost = {cost:.2f}"
         )
-```
