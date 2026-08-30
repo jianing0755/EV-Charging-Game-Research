@@ -1,4 +1,3 @@
-```python
 """
 Private Type and Distribution Model for the Bayesian EV Charging Game.
 
@@ -957,4 +956,3 @@ if __name__ == "__main__":
     )
 
     print("=" * 70)
-```
