@@ -883,15 +883,9 @@ if __name__ == "__main__":
     )
 
     print(
-        f"Initial expected chargers: "
-        f"{expected_charging_evs("
-        f"parameters.n_evs, "
-        f"initial_threshold, "
-        f"parameters.soc_min, "
-        f"parameters.soc_max"
-        f"):.4f}"
-    )
-
+    f"Initial expected chargers: "
+    f"{expected_charging_evs(parameters.n_evs, initial_threshold, parameters.soc_min, parameters.soc_max):.4f}"
+)
     # --------------------------------------------------------
     # BNE solution
     # --------------------------------------------------------
