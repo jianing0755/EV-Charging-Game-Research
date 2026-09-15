@@ -1,23 +1,37 @@
 # 04 — Paper Replication
 
-This module implements the mathematical models, Bayesian game formulation, and solution procedures presented in:
 
-> **Yan, H., & Tang, X.**
-> *Incorporating Bounded Rationality into Electric Vehicle Highway Charging Decisions: A Bayesian Game Analysis.*
-> **IEEE Internet of Things Journal**, 2025, 12(11), 15249–15260.
-> DOI: `10.1109/JIOT.2025.3530449`
+## 1. Purpose of This Module
 
-The purpose of this module is to build an **independent Python implementation** of the paper's mathematical framework and algorithms, with each major model component separated into an interpretable function and validated against the paper's formulation.
+The previous modules developed the basic concepts required for this paper:
 
-> **Current status:** Paper replication — mathematical model implementation, equation-level validation, and data-reproduction stage.
+```text
+01 — Game Theory
+        ↓
+02 — Bayesian Game
+        ↓
+03 — EV Charging Model
+        ↓
+04 — Paper Replication
+```
+
+Therefore, this module does **not** introduce Game Theory, Bayesian Games, or the EV charging model from scratch.
+
+Instead, the purpose of Module 04 is to answer:
+
+> **Can the mathematical framework and solution procedures of a real research paper be translated into executable Python code and systematically validated?**
+
+The implementation focuses on connecting the paper's mathematical formulation with executable functions and numerical validation.
 
 ---
 
-# 1. Paper Overview
+# 2. What the Paper Studies
 
-The paper studies EV highway charging decisions when drivers do not behave as perfectly rational decision makers.
+The paper studies **EV highway charging decisions under bounded rationality**.
 
-The key idea is to combine:
+The key idea is that EV drivers may reserve more electricity than is theoretically necessary because of behavioral factors such as risk aversion and range anxiety.
+
+The paper therefore combines:
 
 ```text
 Bounded Rationality
@@ -29,336 +43,222 @@ Bayesian Game
 EV Highway Charging
 ```
 
-The paper focuses on the following decision problem:
+The EV drivers make charging decisions under incomplete information about other drivers.
 
-> **Given uncertainty about other EV drivers' charging decisions, how should an EV driver decide whether to charge while balancing range anxiety, charging cost, and queuing cost?**
+Their decision cost incorporates:
 
-The model captures the fact that drivers may reserve more battery energy than is theoretically necessary because of **range anxiety and risk aversion**.
-
-The paper then models the interaction among EV drivers as a **Bayesian game with incomplete information**.
-
----
-
-# 2. Research Logic
-
-The mathematical structure implemented in this module can be summarized as:
-
-```text
-EV / Trip Information
-        │
-        ├── Initial SoC
-        ├── Destination
-        ├── Travel Distance
-        └── Vehicle Characteristics
-                │
-                ↓
-        Range Anxiety
-                │
-                ↓
-        Driver Type
-        / Risk Preference
-                │
-                ↓
-       Charging Decision
-                │
-       ┌────────┼─────────┐
-       ↓        ↓         ↓
- Range Anxiety  Charging  Queueing
-     Cost         Fee       Cost
-       └────────┼─────────┘
-                ↓
-          Total Cost
-                ↓
-       Bayesian Game
-                ↓
- Bayesian Nash Equilibrium
-                ↓
-    Charging Decisions
-                ↓
-   Network-level Outcomes
-```
-
-The implementation follows this logical chain rather than treating the equations as independent calculations.
-
----
-
-# 3. Model Components
-
-## 3.1 EV Charging Decision
-
-The fundamental decision of an EV driver is whether to charge during the highway trip.
-
-The driver's decision is affected by:
-
-* remaining State of Charge (SoC);
-* travel distance;
-* destination;
-* charging fee;
-* expected waiting time;
 * range anxiety;
-* behavioral type / risk preference;
-* other drivers' charging decisions.
+* charging fees;
+* queuing time.
 
-The action space is represented by the charging decision used in the paper's game formulation.
+The paper then analyzes the resulting **Bayesian Nash Equilibrium (BNE)**.
 
----
-
-# 4. Bounded Rationality and Prospect Theory
-
-A central feature of the paper is that EV drivers are not assumed to have perfect rationality.
-
-Instead, the model incorporates behavioral characteristics through **prospect theory**.
-
-The main behavioral implication is that drivers may perceive the risk of insufficient battery energy differently from a perfectly rational benchmark.
-
-This produces a tendency to maintain a higher perceived safety margin.
-
-In the implementation, the behavioral parameter is separated from the physical EV state so that the effect of risk preference can be studied independently.
+It establishes the existence and uniqueness of the BNE in two practical scenarios and uses real-life data to study the impact of risk aversion on charging behavior and highway charging-system outcomes.
 
 ---
 
-# 5. Range Anxiety
+# 3. What Is Being Reproduced
 
-Range anxiety represents the driver's perceived cost or risk associated with insufficient remaining battery energy.
+This implementation focuses on the following parts of the paper:
 
-The relevant EV state is determined by variables such as:
+### Mathematical Model
+
+* EV state and travel variables
+* State of Charge (SoC)
+* safety and destination-related thresholds
+* range-anxiety cost
+* charging cost
+* queuing cost
+* expected cost
+* driver type distribution
+* payoff / cost functions
+
+### Bayesian Game
+
+* incomplete information
+* driver types
+* expected cost
+* best-response conditions
+* Bayesian Nash Equilibrium
+
+### Equilibrium Algorithms
+
+* Algorithm 1
+* Algorithm 2
+* equilibrium threshold calculation
+* destination-dependent equilibrium calculation
+
+### Numerical Validation
+
+* equation-level checks
+* intermediate-value checks
+* algorithm-level validation
+* numerical reference cases
+
+The long-term goal is to connect these components to the paper's data-driven simulation and reproduce its numerical results.
+
+---
+
+# 4. Paper-to-Code Structure
+
+The implementation is organized according to the mathematical structure of the paper.
 
 ```text
-Initial SoC
-Travel Distance
-Destination Distance
-Battery / Vehicle Parameters
-Safety Requirement
+Paper Model
+     ↓
+Mathematical Equations
+     ↓
+Python Functions
+     ↓
+Equation Validation
+     ↓
+Algorithm Validation
+     ↓
+Numerical Simulation
 ```
 
-The resulting range-anxiety component enters the driver's total cost.
+The main files are:
 
-The corresponding implementation is separated into the EV model and paper-specific payoff calculations.
+| File                   | Role in the paper                        |
+| ---------------------- | ---------------------------------------- |
+| `expected_cost.py`     | Expected-cost calculations               |
+| `type_distribution.py` | Driver-type distributions                |
+| `payoff.py`            | Paper-specific cost / payoff formulation |
+| `bne_solver.py`        | Main BNE mathematical implementation     |
+| `simulation.py`        | Numerical execution and validation       |
 
 ---
 
-# 6. Driver Type
+# 5. Equation-to-Code Mapping
 
-The Bayesian game requires uncertainty about the characteristics of other EV drivers.
+A central goal of this reproduction is to make the mathematical model traceable.
 
-A driver is therefore associated with a private type related to behavioral characteristics.
+The implementation in `bne_solver.py` contains functions corresponding to the paper's major equations and intermediate quantities.
 
-The implementation provides explicit representations of the type distribution.
-
-### Current implementation
+The current structure includes:
 
 ```text
-type_distribution.py
+Eq. (1)
+Eq. (2)
+Eq. (3)
+Eq. (4)
+...
+Eq. (21)
 ```
 
-This module currently supports:
+Rather than putting the entire mathematical model into one calculation, the equations are implemented as separate logical components whenever possible.
+
+For example:
+
+```text
+Paper Equation
+      ↓
+Python Function
+      ↓
+Numerical Value
+      ↓
+Validation
+```
+
+This makes it possible to identify whether a discrepancy comes from:
+
+* the mathematical implementation;
+* the parameter setting;
+* the equilibrium algorithm;
+* or the numerical experiment.
+
+---
+
+# 6. Main Implementation Components
+
+## `expected_cost.py`
+
+Implements the expected-cost calculations required when an EV driver does not know the exact state or decision of other drivers.
+
+---
+
+## `type_distribution.py`
+
+Represents the distribution of driver types used by the Bayesian game.
+
+The current implementation supports both:
 
 * continuous type distributions;
-* discrete type distributions;
-* uniform-type representations used in numerical validation.
+* discrete type distributions.
 
-For example, the current replication uses a uniform distribution when reproducing the paper's corresponding numerical setting.
-
----
-
-# 7. Cost Structure
-
-The driver's objective is to minimize the overall cost associated with a charging decision.
-
-The implementation separates the main cost components:
-
-```text
-Total Cost
-    =
-Range Anxiety Cost
-+
-Charging Cost
-+
-Queuing Cost
-```
-
-The paper's Bayesian game is therefore not simply a charging-price optimization problem.
-
-The charging decision represents a trade-off between:
-
-* charging now;
-* paying the charging fee;
-* waiting in a queue;
-* and reducing the risk/cost associated with insufficient battery energy.
+The distribution can then be passed into the expected-cost and BNE calculations.
 
 ---
 
-# 8. Expected Cost
+## `payoff.py`
 
-Because an EV driver does not know the private information and actions of other drivers, the driver evaluates decisions using expected cost.
+Implements the paper-specific cost / payoff structure.
 
-The expected-cost formulation is implemented in:
+The purpose is to keep the definition of the driver's objective separate from the equilibrium-solving procedure.
 
-```text
-expected_cost.py
+---
+
+## `bne_solver.py`
+
+This is the core of the paper reproduction.
+
+It currently contains:
+
+* EV representation;
+* destination representation;
+* SoC-related calculations;
+* paper-specific equations;
+* expected-cost relationships;
+* equilibrium conditions;
+* Algorithm 1;
+* Algorithm 2;
+* validation functions.
+
+The main objective is to reproduce the paper's Bayesian Nash Equilibrium calculation rather than implement a generic game solver.
+
+---
+
+# 7. Algorithm 1
+
+The first equilibrium-solving procedure corresponds to the paper's first practical scenario.
+
+The implementation is:
+
+```python
+algorithm1_bne_without_destination_distribution()
 ```
-
-The purpose of this module is to translate uncertain information about other drivers into an expected decision cost.
 
 Conceptually:
 
 ```text
-Unknown Other Drivers
+EV / Driver Information
         ↓
-Type Distribution
-        ↓
-Possible Actions
-        ↓
-Expected Cost
-        ↓
-Best Response
-```
-
-This is the key step connecting the EV cost model to the Bayesian game.
-
----
-
-# 9. Bayesian Game Formulation
-
-The EV charging problem is formulated as a Bayesian game because drivers possess incomplete information about other players.
-
-The game contains:
-
-### Players
-
-EV drivers traveling on the highway.
-
-### Types
-
-Private behavioral / state information associated with individual drivers.
-
-### Actions
-
-Charging decisions.
-
-### Payoffs / Costs
-
-The total perceived cost associated with each charging decision.
-
-### Beliefs
-
-Probability distributions over the types and decisions of other players.
-
-The objective is to find a strategy profile in which no player can reduce expected cost by unilaterally changing their strategy.
-
-This corresponds to the **Bayesian Nash Equilibrium (BNE)**.
-
----
-
-# 10. Bayesian Nash Equilibrium
-
-The core solver is:
-
-```text
-bne_solver.py
-```
-
-The solver implements the paper-specific equilibrium calculation rather than relying on a generic game-theory package.
-
-The main structure is:
-
-```text
 Driver Type
-      ↓
+        ↓
 Expected Cost
-      ↓
+        ↓
 Best Response
-      ↓
-Equilibrium Condition
-      ↓
-Bayesian Nash Equilibrium
-```
-
-The implementation contains the mathematical relationships corresponding to the paper's equations and the equilibrium algorithms.
-
----
-
-# 11. Equation-to-Code Mapping
-
-A major design principle of this replication is:
-
-> **Each important equation should correspond to an identifiable implementation component.**
-
-The current implementation is organized around the following equation groups.
-
-| Paper Component             | Implementation             |
-| --------------------------- | -------------------------- |
-| EV / trip variables         | `bne_solver.py`            |
-| Safety / SoC relationships  | `bne_solver.py`            |
-| Range-anxiety relationships | `bne_solver.py` / EV model |
-| Expected cost               | `expected_cost.py`         |
-| Type distribution           | `type_distribution.py`     |
-| Payoff / total cost         | `payoff.py`                |
-| Bayesian best response      | `bne_solver.py`            |
-| BNE conditions              | `bne_solver.py`            |
-| Algorithm 1                 | `bne_solver.py`            |
-| Algorithm 2                 | `bne_solver.py`            |
-| Numerical validation        | `simulation.py`            |
-
-The objective is to make the implementation traceable from the paper's mathematical formulation to executable code.
-
----
-
-# 12. Algorithm 1 — BNE Without Destination Distribution
-
-The first practical scenario considers the Bayesian equilibrium without explicitly incorporating the destination distribution into the equilibrium calculation.
-
-The corresponding implementation is:
-
-```text
-algorithm1_bne_without_destination_distribution()
-```
-
-The computational logic is:
-
-```text
-EV Information
-      ↓
-Driver Type
-      ↓
-Expected Cost
-      ↓
-Best Response
-      ↓
+        ↓
 Equilibrium Threshold
-      ↓
+        ↓
 BNE
 ```
 
-The implementation is validated using deterministic and stochastic parameter settings corresponding to the paper's numerical framework.
+The implementation is designed to reproduce the paper's equilibrium calculation under the corresponding information setting.
 
 ---
 
-# 13. Algorithm 2 — BNE With Destination Distribution
+# 8. Algorithm 2
 
-The second practical scenario incorporates information about destination distribution.
+The second equilibrium-solving procedure incorporates destination-distribution information.
 
-The corresponding implementation is:
+The implementation is:
 
-```text
+```python
 algorithm2_bne_with_destination_distribution()
 ```
 
-The algorithm introduces an additional relationship between:
-
-```text
-Destination
-     ↓
-Charging Need
-     ↓
-Driver Distribution
-     ↓
-Expected Charging Behavior
-     ↓
-Equilibrium
-```
-
-The implementation explicitly handles the intermediate quantities used by the paper's algorithm, including:
+The algorithm explicitly handles the intermediate quantities required by the paper's destination-aware formulation, including:
 
 ```text
 m
@@ -366,47 +266,29 @@ h(m)
 destination threshold
 ```
 
-The purpose is to reproduce the destination-aware equilibrium calculation rather than treating destination information as an external simulation parameter.
-
----
-
-# 14. Paper Equations
-
-The current implementation follows the mathematical framework from the paper's equation system.
-
-The solver contains implementations corresponding to:
+The structure is:
 
 ```text
-Eq. (1)
-Eq. (2)
-Eq. (3)
-Eq. (4)
-Eq. (5)
-Eq. (6)
-Eq. (7)
-Eq. (8)
-...
-Eq. (21)
+Destination Information
+        ↓
+Expected Charging Behavior
+        ↓
+Equilibrium Condition
+        ↓
+Threshold Update
+        ↓
+BNE
 ```
 
-The equations are implemented as separate logical components rather than being collapsed into one large numerical procedure.
-
-This makes it possible to validate:
-
-1. individual equations;
-2. intermediate quantities;
-3. equilibrium conditions;
-4. complete algorithms.
+The purpose is to reproduce the paper's second practical scenario rather than simply simulate charging behavior independently.
 
 ---
 
-# 15. Parameters
+# 9. Numerical Parameters
 
-The implementation distinguishes between three types of parameters.
+The implementation distinguishes between parameters from the paper and parameters introduced for testing.
 
-## 15.1 Model Parameters
-
-Parameters defined by the mathematical model.
+### Paper / Model Parameters
 
 Examples include:
 
@@ -418,13 +300,7 @@ Examples include:
 SoCt
 ```
 
-where the exact interpretation follows the paper's notation.
-
----
-
-## 15.2 Numerical Example Parameters
-
-Parameters used for specific numerical demonstrations.
+### Numerical Example Parameters
 
 Examples include:
 
@@ -435,45 +311,44 @@ V
 t0
 ```
 
-These are used only when reproducing the corresponding numerical scenarios.
+### Validation / Experimental Parameters
 
----
-
-## 15.3 Experimental / Validation Parameters
-
-Parameters introduced for:
+Additional parameters may be introduced for:
 
 * debugging;
-* sensitivity analysis;
-* synthetic-data experiments;
-* implementation validation.
+* controlled testing;
+* synthetic experiments;
+* sensitivity analysis.
 
-These are explicitly distinguished from parameters directly reported by the paper.
+These should not be confused with parameters directly specified by the paper.
 
 ---
 
-# 16. Numerical Validation
+# 10. Validation Strategy
 
-The validation framework is designed to compare the implementation against the mathematical relationships and numerical behavior described in the paper.
+Validation is separated from the implementation itself.
 
-The validation process follows:
+The intended validation hierarchy is:
 
 ```text
 Equation
    ↓
 Intermediate Variable
    ↓
+Cost / Payoff
+   ↓
+Equilibrium Condition
+   ↓
 Algorithm
    ↓
 Numerical Example
-   ↓
-Simulation Result
 ```
 
-Current validation includes:
+Current validation focuses on:
 
-* expected-cost calculations;
-* type-distribution calculations;
+* equation-level calculations;
+* type distributions;
+* expected costs;
 * payoff calculations;
 * BNE conditions;
 * Algorithm 1;
@@ -482,16 +357,18 @@ Current validation includes:
 
 ---
 
-# 17. Current Validation Status
+# 11. Current Progress
 
 ### Completed
 
-* [x] Paper mathematical structure identified
-* [x] EV state representation
-* [x] Type-distribution implementation
+* [x] Game-theoretic foundations
+* [x] Bayesian-game foundations
+* [x] EV charging model
+* [x] Paper-specific parameterization
 * [x] Expected-cost implementation
-* [x] Payoff implementation
-* [x] Bayesian Nash equilibrium solver
+* [x] Driver-type distribution
+* [x] Payoff / cost implementation
+* [x] Bayesian Nash Equilibrium solver
 * [x] Algorithm 1 implementation
 * [x] Algorithm 2 implementation
 * [x] Initial equation-level validation
@@ -499,213 +376,98 @@ Current validation includes:
 
 ### In Progress
 
-* [ ] Complete equation-by-equation validation
-* [ ] Full reproduction of all numerical experiments
-* [ ] Real-data preprocessing
-* [ ] Traffic-data interface
+* [ ] Complete equation-by-equation verification
+* [ ] Synthetic traffic-data interface
+* [ ] Real-data interface
 * [ ] End-to-end simulation
-* [ ] Comparison with all paper-reported results
-* [ ] Reproduction of network-level charging-demand results
+* [ ] Full numerical reproduction
+* [ ] Comparison with paper-reported results
 
 ---
 
-# 18. Data and Simulation
+# 12. Data Reproduction
 
-The paper's numerical experiments use real-life data to investigate the impact of driver risk aversion on:
+The paper uses real-life data for its numerical experiments and investigates how risk aversion affects:
 
 * EV charging decisions;
 * charging demand;
-* queue lengths;
-* departure rates;
-* EV costs;
+* queue lengths at charging stations;
+* departure rates on the highway network;
+* cumulative EV cost;
 * charging-station costs.
 
-The current repository is still at the **data reproduction stage**.
+The current implementation has **not yet completed the full real-data reproduction pipeline**.
 
-Therefore, the current implementation distinguishes between:
-
-```text
-Paper Model
-     ↓
-Synthetic / Controlled Validation
-```
-
-and the future:
+The current stage is therefore:
 
 ```text
-Real Traffic / EV Data
-     ↓
-Paper Parameterization
-     ↓
-BNE Solver
-     ↓
-Network Simulation
-     ↓
-Paper-level Numerical Results
+Mathematical Model
+       ↓
+Equation Validation
+       ↓
+BNE Algorithm
+       ↓
+Controlled / Synthetic Validation
+       ↓
+[Current Stage]
+Data Interface
+       ↓
+Real-data Reproduction
 ```
 
-A dedicated data interface will be added before attempting full real-data reproduction.
+This distinction is intentional: the project does not claim that the complete numerical experiments of the paper have already been reproduced.
 
 ---
 
-# 19. Simulation Pipeline
+# 13. Reproduction Philosophy
 
-The intended complete pipeline is:
+This repository is an **independent Python reproduction**, not the official implementation of the paper.
 
-```text
-Traffic / EV Data
-        ↓
-EV Initialization
-        ↓
-Destination & Distance
-        ↓
-SoC
-        ↓
-Driver Type
-        ↓
-Range Anxiety
-        ↓
-Charging / Queue Costs
-        ↓
-Expected Cost
-        ↓
-BNE Solver
-        ↓
-Charging Decision
-        ↓
-Charging Demand
-        ↓
-Queue Length
-        ↓
-Departure Rate
-        ↓
-Cost Analysis
-```
+The goal is to understand the paper at three levels:
 
-The current implementation has completed the core model and equilibrium components.
+### Level 1 — Mathematical Understanding
 
-The end-to-end data-driven simulation remains under development.
+Understand what each equation represents.
 
----
+### Level 2 — Computational Implementation
 
-# 20. File Structure
+Translate the equations and algorithms into executable Python functions.
+
+### Level 3 — Numerical Reproduction
+
+Use the implemented model and data to reproduce the paper's reported behavior and results.
+
+The desired workflow is:
 
 ```text
-04_paper_replication/
-│
-├── expected_cost.py
-│
-├── type_distribution.py
-│
-├── payoff.py
-│
-├── bne_solver.py
-│
-├── simulation.py
-│
-└── README.md
-```
-
-### `expected_cost.py`
-
-Implements expected-cost calculations under incomplete information.
-
-### `type_distribution.py`
-
-Defines the behavioral / private-type distributions used by the Bayesian game.
-
-### `payoff.py`
-
-Computes the paper-specific payoff / cost structure.
-
-### `bne_solver.py`
-
-Core mathematical implementation of the paper's Bayesian Nash equilibrium formulation.
-
-Contains:
-
-* EV representation;
-* destination representation;
-* SoC-related equations;
-* cost relationships;
-* equilibrium conditions;
-* Algorithm 1;
-* Algorithm 2;
-* validation functions.
-
-### `simulation.py`
-
-Provides the numerical execution layer for testing the implemented model and algorithms.
-
----
-
-# 21. Design Principle
-
-The implementation follows three principles.
-
-## 21.1 Paper First
-
-The code is based on the mathematical formulation in the paper rather than introducing a new model.
-
-## 21.2 Equation Traceability
-
-Important mathematical relationships should be traceable to specific functions.
-
-```text
-Paper Equation
-      ↓
-Python Function
-      ↓
-Validation
-```
-
-## 21.3 Implementation ≠ Validation
-
-The mathematical implementation and validation procedures are kept separate.
-
-This allows a numerical failure to be identified as either:
-
-* an implementation problem;
-* a parameter problem;
-* or a validation / reproduction problem.
-
----
-
-# 22. Reproduction Status
-
-This repository should currently be understood as an:
-
-> **Independent Python implementation and reproduction attempt**
-
-rather than an official implementation of the paper.
-
-The project does **not** claim that the complete numerical results of the paper have already been reproduced.
-
-The current goal is to progressively establish:
-
-```text
-Mathematical Correctness
-        ↓
-Algorithmic Correctness
-        ↓
-Numerical Reproduction
-        ↓
-Data-driven Reproduction
+Read Paper
+    ↓
+Understand Equation
+    ↓
+Implement Function
+    ↓
+Validate Function
+    ↓
+Implement Algorithm
+    ↓
+Validate Algorithm
+    ↓
+Reproduce Numerical Results
 ```
 
 ---
 
-# 23. Next Steps
+# 14. Next Steps
 
-The next development stages are:
+The next development steps are:
 
-### Stage 1 — Equation Validation
+### Step 1 — Complete Equation Validation
 
-Complete a one-to-one check between the paper's equations and the Python implementation.
+Establish a one-to-one mapping between the paper's equations and the Python implementation.
 
-### Stage 2 — Data Interface
+### Step 2 — Build Data Interface
 
-Implement:
+Add:
 
 ```text
 traffic_data.py
@@ -716,7 +478,7 @@ with separate interfaces for:
 * synthetic data;
 * real data.
 
-### Stage 3 — End-to-End Simulation
+### Step 3 — Complete End-to-End Simulation
 
 Connect:
 
@@ -728,56 +490,25 @@ bne_solver
 simulation
 ```
 
-to create a complete charging-decision pipeline.
+### Step 4 — Reproduce Numerical Experiments
 
-### Stage 4 — Numerical Reproduction
+Compare the implementation against the paper's reported results.
 
-Reproduce the paper's numerical experiments and compare:
+### Step 5 — Extension
 
-* charging demand;
-* queue length;
-* departure rate;
-* EV cost;
-* charging-station cost.
+Only after the reproduction is stable, consider extensions to the model or charging-network setting.
 
-### Stage 5 — Extension
 
-Only after the reproduction is stable, investigate possible extensions such as:
-
-* alternative driver distributions;
-* sensitivity to risk aversion;
-* alternative traffic conditions;
-* additional charging-network scenarios;
-* optimization extensions.
-
----
-
-# 24. Reference
-
-**Yan, H., & Tang, X. (2025).**
-
-*Incorporating Bounded Rationality Into Electric Vehicle Highway Charging Decisions: A Bayesian Game Analysis.*
-
-IEEE Internet of Things Journal, 12(11), 15249–15260.
-
-DOI:
-
-```text
-10.1109/JIOT.2025.3530449
-```
-
-The authors' work provides the mathematical and experimental basis for this independent Python reproduction project.
+The official paper also provides MATLAB code. This repository is an independent Python implementation developed for research learning and reproduction.
 
 ---
 
 ## Current Status
 
-**Paper:** EV highway charging decisions under bounded rationality
+**Research stage:** Paper reproduction
 
-**Method:** Prospect Theory + Bayesian Game
+**Implementation:** Independent Python implementation
 
-**Implementation:** Independent Python reproduction
+**Current focus:** Mathematical model + BNE algorithms + validation
 
-**Current stage:** Model implementation + equation-level validation + data reproduction
-
-**Next milestone:** Synthetic/real data interface → end-to-end simulation → numerical reproduction
+**Next milestone:** Data interface → end-to-end simulation → numerical reproduction
