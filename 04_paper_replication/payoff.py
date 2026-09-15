@@ -2,7 +2,6 @@
 Payoff Functions for the Bayesian EV Charging Game.
 
 This module implements the payoff structure used in:
-
     "Incorporating Bounded Rationality into Electric Vehicle
      Highway Charging Decisions: A Bayesian Game Analysis"
 
