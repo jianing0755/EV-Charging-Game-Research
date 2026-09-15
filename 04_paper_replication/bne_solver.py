@@ -7,7 +7,7 @@ Paper
 Highway Charging Decisions: A Bayesian Game Analysis"
 
 This module implements the threshold-based Bayesian Nash
-equilibrium calculation for the EV charging game.
+equilibrium calculation for the EV charging game
 
 The solver connects:
 
