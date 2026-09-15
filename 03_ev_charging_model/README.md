@@ -1,32 +1,32 @@
 # 03 — EV Charging Model
 
-A Python implementation of the EV charging decision model that serves as the computational foundation for the subsequent paper replication.
+This module develops a standalone computational model of an electric vehicle (EV) charging environment.
 
-This project translates the mathematical structure of an electric vehicle (EV) charging decision problem into modular and testable Python code.
+The purpose of this module is to translate EV charging concepts into modular and testable Python components before applying the game-theoretic framework to the target research paper in `04_paper_replication`.
 
-The model focuses on:
+The module focuses on the physical and economic components of an EV charging decision, including:
 
-- State of Charge (SoC)
-- Safe and danger SoC thresholds
-- Range anxiety
-- Charging energy
-- Charging time
-- Charging station capacity
-- Queueing time
-- Charging cost
-- Queueing cost
-- Total utility
+* State of Charge (SoC)
+* Safe and danger SoC thresholds
+* Range anxiety
+* Charging energy
+* Charging time
+* Charging station capacity
+* Queueing time
+* Charging cost
+* Queueing cost
+* Total utility
 
-This module serves as the foundation for **04 — Paper Replication**, where the EV charging environment will be combined with Bayesian game theory and equilibrium analysis.
+This module is a **standalone modeling stage**. It is not intended to reproduce the target research paper directly.
 
 ---
 
-## 1. Research Workflow
+## 1. Role in the Overall Project
 
-This project is organized into five stages:
+The project follows the progression:
 
 ```text
-01 — Game Theory
+01 — Game Theory Basics
         ↓
 02 — Bayesian Game
         ↓
@@ -37,45 +37,58 @@ This project is organized into five stages:
 05 — Extension
 ```
 
-The purpose of Stage 03 is to convert the mathematical EV charging model into a working computational environment.
+Each stage has a different purpose:
+
+* **01:** Build the foundation of strategic decision-making.
+* **02:** Introduce incomplete information, beliefs, and Bayesian decision-making.
+* **03:** Translate EV charging behavior into a computational model.
+* **04:** Integrate these foundations and independently reproduce the mathematical model and equilibrium algorithms of a published paper.
+* **05:** Explore possible extensions beyond the original paper.
+
+Therefore, Stage 03 serves as the bridge between **abstract game-theoretic concepts** and the **real EV charging research problem**.
 
 ---
 
 ## 2. Model Overview
 
-An EV driver must decide whether to charge at a charging station before continuing the trip.
+An EV driver must decide whether charging is necessary or economically desirable before continuing a trip.
 
-The decision depends on several factors:
+The decision depends on factors such as:
 
 1. Current battery State of Charge (SoC)
 2. Distance to the next charging station
-3. Safe driving range
-4. Maximum driving range
+3. Available driving range
+4. Safe driving threshold
 5. Range anxiety
 6. Electricity price
-7. Charging time
-8. Expected queueing time
-9. Driver-specific cost of waiting
+7. Charging energy
+8. Charging time
+9. Expected queueing time
+10. Driver-specific waiting cost
 
 The computational structure is:
 
 ```text
 Current SoC
-    ↓
+     ↓
 Safe / Danger SoC
-    ↓
+     ↓
 Range Anxiety
-    ↓
+     ↓
 Charging Requirement
-    ↓
+     ↓
 Charging Time
-    ↓
+     ↓
 Expected Queue
-    ↓
+     ↓
 Charging Cost + Queueing Cost
-    ↓
+     ↓
 Total Utility
+     ↓
+Charging Decision
 ```
+
+The model is intentionally modular so that individual components can be tested independently.
 
 ---
 
@@ -83,11 +96,11 @@ Total Utility
 
 Let:
 
-- $SoC_i$ denote the current state of charge of EV $i$.
-- $V_i$ denote the battery capacity.
-- $SoC_{t,i}$ denote the target state of charge.
+* \(SoC_i\) denote the current state of charge of EV \(i\).
+* \(V_i\) denote the battery capacity.
+* \(SoC_{t,i}\) denote the target state of charge.
 
-The state of charge is normalized to:
+The state of charge is normalized as:
 
 $$
 0 \leq SoC_i \leq 1
@@ -102,28 +115,33 @@ SoC = 0.80  → 80%
 ```
 
 ---
+
 ## 4. Safe State of Charge
 
 Let:
 
-* $d_i$ be the distance to the next charging station.
-* $d_{s,i}$ be the safe driving range.
+* \(d_i\) be the distance to the next charging station.
+* \(d_{s,i}\) be the safe driving range.
 
 The safe SoC threshold is:
 
 $$
-SoC_{s,i} = \frac{d_i}{d_{s,i}} \quad \text{if } d_i < d_{s,i}, \qquad SoC_{s,i} = 1 \quad \text{if } d_i \geq d_{s,i}
+SoC_{s,i} =
+\begin{cases}
+\dfrac{d_i}{d_{s,i}}, & d_i < d_{s,i} \\
+1, & d_i \geq d_{s,i}
+\end{cases}
 $$
 
 The interpretation is:
 
 ```text
 SoC ≥ Safe SoC
-    ↓
+      ↓
 No range anxiety
 
 SoC < Safe SoC
-    ↓
+      ↓
 Range anxiety may occur
 ```
 
@@ -131,12 +149,16 @@ Range anxiety may occur
 
 ## 5. Danger State of Charge
 
-Let $d_{0,i}$ denote the theoretical maximum driving range.
+Let \(d_{0,i}\) denote the theoretical maximum driving range.
 
 The danger SoC threshold is:
 
 $$
-SoC_{d,i} = \frac{d_i}{d_{0,i}} \quad \text{if } d_i < d_{0,i}, \qquad SoC_{d,i} = 1 \quad \text{if } d_i \geq d_{0,i}
+SoC_{d,i} =
+\begin{cases}
+\dfrac{d_i}{d_{0,i}}, & d_i < d_{0,i} \\
+1, & d_i \geq d_{0,i}
+\end{cases}
 $$
 
 This creates three regions:
@@ -181,8 +203,8 @@ $$
 
 where:
 
-- $\lambda_i$ controls the intensity of range anxiety.
-- $\alpha_i$ controls the curvature of the anxiety function.
+* \(\lambda_i\) controls the intensity of range anxiety.
+* \(\alpha_i\) controls the curvature of the anxiety function.
 
 The basic relationship is:
 
@@ -192,7 +214,7 @@ SoC_i \downarrow
 A_i \uparrow
 $$
 
-Therefore, lower battery levels generate stronger incentives to charge.
+Therefore, lower battery levels create stronger incentives to charge.
 
 ---
 
@@ -226,24 +248,17 @@ Required energy
 
 ## 8. Charging Time
 
-Let $\eta$ denote charging power.
+Let \(\eta\) denote the effective charging power.
 
 Charging time is:
 
 $$
 T_i =
 \frac{
-V_i(SoC_{t,i} - SoC_i)
+E_i
 }{
 \eta
 }
-$$
-
-Equivalently:
-
-$$
-T_i =
-\frac{E_i}{\eta}
 $$
 
 Therefore:
@@ -254,16 +269,18 @@ E_i \uparrow
 T_i \uparrow
 $$
 
+This component connects the battery model to the charging-station and queueing model.
+
 ---
 
 ## 9. Queueing Time
 
 Suppose:
 
-- $c(N)$ EVs choose to charge.
-- $k$ charging piles are available.
-- $E[T]$ is expected charging time.
-- $t_0$ is the existing queueing time.
+* \(c(N)\) EVs choose to charge.
+* \(k\) charging piles are available.
+* \(E[T]\) is expected charging time.
+* \(t_0\) is the existing queueing time.
 
 The expected queueing time is modeled as:
 
@@ -272,7 +289,7 @@ t =
 \frac{c(N)-1}{2k}E[T] + t_0
 $$
 
-This captures the strategic interaction created by congestion.
+This introduces congestion into the EV charging environment.
 
 As the number of charging EVs increases:
 
@@ -290,11 +307,13 @@ k \uparrow
 t \downarrow
 $$
 
+The resulting queueing component will later provide an important source of strategic interaction between EV drivers.
+
 ---
 
-## 10. Charging Utility
+## 10. Charging Cost
 
-Let $P$ denote the electricity price.
+Let \(P\) denote the electricity price.
 
 The charging cost is:
 
@@ -310,17 +329,17 @@ $$
 
 Therefore:
 
-$$
-\Pi_{c,i} = -V_i(SoC_{t,i} - SoC_i)P
-$$
+**Charging cost utility**
 
-Charging creates a direct monetary cost.
+`Pi_c,i = -V_i (SoC_t,i - SoC_i) P`
+
+Charging therefore creates a direct monetary cost.
 
 ---
 
-## 11. Queueing Utility
+## 11. Queueing Cost
 
-Let $\mu_{q,i}$ denote the driver's cost of waiting.
+Let `mu_q,i` denote the driver's cost of waiting.
 
 The queueing utility is:
 
@@ -336,13 +355,13 @@ t \uparrow
 \Pi_{q,i} \downarrow
 $$
 
-Drivers who dislike waiting more strongly will place a higher cost on charging-station congestion.
+Drivers with a higher waiting-cost parameter place a greater economic cost on charging-station congestion.
 
 ---
 
 ## 12. Total Utility
 
-The total utility combines:
+The total utility combines the relevant components:
 
 1. Range anxiety
 2. Charging cost
@@ -351,32 +370,30 @@ The total utility combines:
 Conceptually:
 
 $$
-\Pi_i = \Pi_{a,i} + \Pi_{c,i} + \Pi_{q,i}
+\Pi_i =
+\Pi_{a,i}
++
+\Pi_{c,i}
++
+\Pi_{q,i}
 $$
 
-For a charging EV:
+For an EV that chooses to charge:
 
-$$
-\Pi_i^{\mathrm{charge}} = \Pi_{c,i} + \Pi_{q,i}
-$$
+- Charging utility = charging cost utility + queueing utility
+- Total charging utility = `Pi_C`
 
-For an EV that does not charge:
+For an EV that chooses not to charge:
 
-$$
-\Pi_i^{\mathrm{no\ charge}} = \Pi_{a,i}
-$$
+- Non-charging utility = range-anxiety utility
+- Total non-charging utility = `Pi_NC`
 
-The charging decision can therefore be represented as:
+The EV chooses to charge when:
 
-$$
-\text{Charge if}
-\qquad
-\Pi_i^{\mathrm{charge}} >
-\Pi_i^{\mathrm{no\ charge}}
-$$
+`Pi_C > Pi_NC`
+This provides a basic payoff structure that can later be incorporated into a strategic decision model.
 
-This utility comparison becomes the basis for the Bayesian equilibrium analysis in Stage 04.
-
+---
 
 ## 13. Repository Structure
 
@@ -402,204 +419,18 @@ This utility comparison becomes the basis for the Bayesian equilibrium analysis 
 
 ## 14. File Description
 
-| File | Description |
-|---|---|
-| `README.md` | Documentation and mathematical model |
-| `ev_model.py` | EV driver model and SoC thresholds |
-| `range_anxiety.py` | Range anxiety calculation |
-| `charging_station.py` | Charging station parameters |
-| `queue_model.py` | Charging time and queueing model |
-| `utility.py` | Utility functions |
-| `simulation.py` | Complete simulation example |
-| `requirements.txt` | Python dependencies |
-| `tests/` | Unit tests |
+| File                  | Description                                     |
+| --------------------- | ----------------------------------------------- |
+| `README.md`           | Documentation and mathematical model            |
+| `ev_model.py`         | EV driver model and SoC thresholds              |
+| `range_anxiety.py`    | Range anxiety calculation                       |
+| `charging_station.py` | Charging-station parameters                     |
+| `queue_model.py`      | Charging time and queueing model                |
+| `utility.py`          | Charging, queueing, and total utility functions |
+| `simulation.py`       | End-to-end demonstration of the EV model        
 
 ---
 
-## 15. Equation-to-Code Mapping
 
-| Mathematical Component | Python Implementation |
-|---|---|
-| Current SoC | `EV.soc` |
-| Battery capacity | `EV.battery_capacity` |
-| Target SoC | `EV.target_soc` |
-| Safe SoC | `EV.safe_soc` |
-| Danger SoC | `EV.danger_soc` |
-| Range anxiety | `calculate_range_anxiety()` |
-| Charging energy | `charging_energy()` |
-| Charging time | `charging_time()` |
-| Queueing time | `expected_queue_time()` |
-| Charging utility | `charging_utility()` |
-| Queueing utility | `queue_utility()` |
-| Total utility | `total_utility()` |
 
----
 
-## 16. Installation
-
-Enter the project directory:
-
-```bash
-cd 03_ev_charging_model
-```
-
-Install the required dependency:
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## 17. Run the Simulation
-
-Run:
-
-```bash
-python simulation.py
-```
-
-The simulation reports:
-
-- EV SoC
-- Safe SoC
-- Danger SoC
-- Range anxiety
-- Charging energy
-- Charging time
-- Expected queueing time
-- Utility when charging
-- Utility when not charging
-- Preferred charging decision
-
----
-
-## 18. Run Tests
-
-Run:
-
-```bash
-pytest
-```
-
-The tests verify the mathematical implementation of:
-
-- Range anxiety
-- Charging energy
-- Charging time
-- Queueing time
-- Charging utility
-- Queueing utility
-- Total utility
-
----
-
-## 19. Research Interpretation
-
-Stage 03 should be understood as the **computational environment**, rather than the complete game-theoretic solution.
-
-The model separates the problem into two layers.
-
-### EV Environment
-
-```text
-Battery
-   ↓
-SoC
-   ↓
-Range
-   ↓
-Charging Requirement
-   ↓
-Charging Time
-   ↓
-Queue
-```
-
-### Economic Decision
-
-```text
-Range Anxiety
-      +
-Charging Cost
-      +
-Queueing Cost
-      ↓
-Total Utility
-      ↓
-Charging Decision
-```
-
-The second layer will become strategically interactive when multiple EVs make decisions simultaneously.
-
----
-
-## 20. Connection to Stage 04
-
-The next stage introduces Bayesian game theory.
-
-Stage 04 will build on this module by adding:
-
-```text
-Private Type
-     ↓
-Belief
-     ↓
-Expected Utility
-     ↓
-Strategic Interaction
-     ↓
-Best Response
-     ↓
-Threshold
-     ↓
-Bayesian Nash Equilibrium
-```
-
-The current module therefore provides the payoff structure required by the Bayesian game.
-
----
-
-## 21. Reproducibility
-
-The implementation is designed to be:
-
-- modular;
-- transparent;
-- testable;
-- reproducible;
-- directly connected to the mathematical formulation.
-
-Each major component of the model is implemented as an independent Python function or class.
-
-This makes it possible to verify the mathematical model before introducing the more complex Bayesian equilibrium calculations.
-
----
-
-## 22. Project Roadmap
-
-### 01 — Game Theory
-
-Basic strategic interaction and utility concepts.
-
-### 02 — Bayesian Game
-
-Private information, beliefs, expected utility, and Bayesian Nash equilibrium.
-
-### 03 — EV Charging Model
-
-Implementation of the EV charging environment.
-
-### 04 — Paper Replication
-
-Reproduce the paper's Bayesian charging model, equilibrium algorithm, numerical experiments, and key results.
-
-### 05 — Extension
-
-Develop and evaluate a new model or extension based on limitations identified during replication.
-
----
-
-## 23. License
-
-This project is intended for academic research, learning, and reproducibility purposes.
