@@ -7,7 +7,6 @@ Paper
 Highway Charging Decisions: A Bayesian Game Analysis"
 
 This module integrates the main components of Stage 04:
-
     type_distribution.py
             ↓
     expected_cost.py
